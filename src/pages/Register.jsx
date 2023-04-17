@@ -1,5 +1,13 @@
 import styled from "styled-components";
 import { mobile } from '../responsive';
+import { useNavigate } from 'react-router-dom';
+//import LockOpenIcon from '@mui/icons-material/LockOpen';
+import * as yup from "yup";
+import toast from "react-hot-toast";
+import { useFormik } from 'formik';
+import { API } from '../global';
+import { TextField } from '@mui/material';
+
 
 const Container = styled.div`
   width: 100vw;
@@ -33,13 +41,6 @@ const Form = styled.form`
   flex-wrap: wrap;
 `;
 
-const Input = styled.input`
-  flex: 1;
-  min-width: 40%;
-  margin: 20px 10px 0px 0px;
-  padding: 10px;
-`;
-
 const Agreement = styled.span`
   font-size: 12px;
   margin: 20px 0px;
@@ -54,28 +55,102 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
+const Link = styled.a`
+  margin: 5px 0px;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+`;
+
+const signupValidationSchema = yup.object({
+  
+  username: yup.string().required("").min(1),
+  email: yup.string().required("").min(8),
+  password: yup.string().required("").min(4),
+  
+})
+
 
 const Register = () => {
+
+  const { handleSubmit, values, handleBlur, handleChange, touched, errors } = useFormik({
+    initialValues: {
+        username: "",
+        email: "",
+        password: "",
+    },
+    validationSchema: signupValidationSchema,
+    onSubmit: (newList) => {
+        // console.log("new member: ", newList)
+        addUser(newList)
+    },
+})
+const addUser = (newList) => {
+    fetch(`${API}/register`, {
+        method: "POST",
+        body: JSON.stringify(newList),
+        headers: { "Content-Type": "application/json" }
+    })
+        .then((data) => data.json())
+        .then((data) => {
+            if (data.message === "Username already exists") {
+                console.log("username already exists");
+            } else {
+                console.log("login successfull");
+                toast.success("Registration Successful");
+                navigate('/login')
+            }
+        })
+}
+
+  const navigate = useNavigate();
+  
   return (
     <Container>
       <Wrapper>
         <Title>CREATE AN ACCOUNT</Title>
-        <Form>
-          <Input placeholder="name" />
-          <Input placeholder="last name" />
-          <Input placeholder="username" />
-          <Input placeholder="email" />
-          <Input placeholder="password" />
-          <Input placeholder="confirm password" />
+        <Form onSubmit={handleSubmit}>
+        <div className='login-input'>
+        <TextField
+            name="username"
+            label="User Name"
+            variant="outlined"
+            onChange={handleChange}
+            value={values.username}
+            onBlur={handleBlur}
+        />
+        {touched.username && errors.username ? errors.username : null}
+        <TextField
+            name="email"
+            label="Email"
+            variant="outlined"
+            onChange={handleChange}
+            value={values.email}
+            onBlur={handleBlur}
+          />
+          {touched.email && errors.email ? errors.email : null}
+        <TextField
+            name="password"
+            label="Password"
+            variant="outlined"
+            type='password'
+            onChange={handleChange}
+            value={values.password}
+            onBlur={handleBlur}
+          />
+          {touched.password && errors.password ? errors.password : null}
           <Agreement>
             By creating an account, I consent to the processing of my personal
             data in accordance with the <b>PRIVACY POLICY</b>
           </Agreement>
-          <Button>CREATE</Button>
+    </div>
+         <Button variant="contained" type="submit" color='success'>Register</Button>
+        <Link>
+        <span onClick={() => navigate('/login')} className='nav'>LOGIN HERE</span>
+        </Link>
         </Form>
       </Wrapper>
     </Container>
   )
-}
-
+  }
 export default Register

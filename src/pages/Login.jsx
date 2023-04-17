@@ -1,8 +1,14 @@
 import styled from "styled-components";
 import { mobile } from '../responsive';
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { login } from "../redux/apiCalls";
+//import { useState } from "react";
+//import { useDispatch, useSelector } from "react-redux";
+//import { login } from "../redux/apiCalls";
+import { useNavigate } from 'react-router-dom';
+import { API } from '../global';
+import { useFormik } from 'formik';
+import toast from "react-hot-toast";
+import { TextField } from '@mui/material';
+
 
 const Container = styled.div`
   width: 100vw;
@@ -36,12 +42,12 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
-const Input = styled.input`
-  flex: 1;
-  min-width: 40%;
-  margin: 10px 0;
-  padding: 10px;
-`;
+// const Input = styled.input`
+//   flex: 1;
+//   min-width: 40%;
+//   margin: 10px 0;
+//   padding: 10px;
+// `;
 
 const Button = styled.button`
   width: 40%;
@@ -70,31 +76,63 @@ const Link = styled.a`
 
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
-  const { isFetching } = useSelector((state) => state.user);
 
-  const handleClick = (e) => {
-    e.preventDefault();
-    login(dispatch, { username, password });
-  };
+  const navigate = useNavigate();
+
+  const { handleChange, values, handleSubmit } = useFormik({
+    initialValues: {
+        username: "",
+        password: "",
+    },
+    onSubmit: async (values) => {
+        // console.log(values);
+
+        const data = await fetch(`${API}/users/login`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(values)
+        })
+
+        if (data.status === 401) {
+            toast.error ("Login Failed");
+            console.log("Login Failed");
+        } else {
+            const result = await data.json();
+            toast.success("Login Success");
+            localStorage.setItem("token",result.token)
+            navigate("/")
+        }
+
+    }
+})
   return (
     <Container>
       <Wrapper>
         <Title>SIGN IN</Title>
-        <Form>
-          <Input placeholder="username" onChange={(e) => setUsername(e.target.value)} 
-          />
-          <Input placeholder="password"  type="password" onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button onClick={handleClick} disabled={isFetching}>
-            LOGIN
-            </Button>
+        <Form onSubmit={handleSubmit}>
+        <div className='login-input'>
+                    <TextField
+                        name="username"
+                        label="User Name"
+                        variant="outlined"
+                        onChange={handleChange}
+                        value={values.username}
+                    />
+
+                    <TextField
+                        name="password"
+                        label="Password"
+                        variant="outlined"
+                        type='password'
+                        onChange={handleChange}
+                        value={values.password}
+                    />
+                    <Button variant="contained" type="submit" color='error'>Login</Button>
             
-          {/* <Link>DO NOT YOU REMEMBER THE PASSWORD?</Link>
-          <Link>CREATE A NEW ACCOUNT</Link> */}
-        </Form>
+           <Link>
+           <span onClick={() => navigate('/register')} className='nav'>CREATE A NEW ACCOUNT REGISTER HERE</span></Link>
+       </div> 
+       </Form>
       </Wrapper>
     </Container>
   )

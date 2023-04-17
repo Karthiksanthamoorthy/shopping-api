@@ -1,4 +1,5 @@
 import './App.css';
+//import { Toaster } from "react-hot-toast";
 import Cart from './pages/Cart';
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -12,23 +13,29 @@ import {
   Navigate,
 } from "react-router-dom";
 import Success from "./pages/Success";
-import { useSelector } from "react-redux";
 
-const App = () => {
-  const user = useSelector((state) => state.user.currentUser);
+
+function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />            
-        <Route path="/products/:category" element={<ProductList />} />
-        <Route path="/product/:id" element={<Product />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/success" element={<Success />} />
-        <Route path="/login" element={user ? <Navigate to="/"/> : <Login />} />
-        <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<ProductedRoute><Home /></ProductedRoute>} />            
+        <Route path="/products/:category" element={<ProductedRoute><ProductList /></ProductedRoute>} />
+        <Route path="/product/:id" element={<ProductedRoute><Product /></ProductedRoute>} />
+        <Route path="/cart" element={<ProductedRoute><Cart /></ProductedRoute>} />
+        <Route path="/success" element={<ProductedRoute><Success /></ProductedRoute>} />
       </Routes>
     </Router>
-
   );
 }
+
+function ProductedRoute({ children }) {
+  const isAuth = localStorage.getItem("token");
+  // console.log(isAuth);
+  return isAuth ? children : <Navigate replace to={"/login"} />;
+}
+
 export default App;
+
