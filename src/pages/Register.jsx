@@ -86,7 +86,7 @@ const Register = () => {
     },
 })
 const addUser = (newList) => {
-    fetch(`${API}/register`, {
+    fetch(`${API}/api/auth/register`, {
         method: "POST",
         body: JSON.stringify(newList),
         headers: { "Content-Type": "application/json" }

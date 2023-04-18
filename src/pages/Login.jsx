@@ -87,7 +87,7 @@ const Login = () => {
     onSubmit: async (values) => {
         // console.log(values);
 
-        const data = await fetch(`${API}/users/login`, {
+        const data = await fetch(`${API}/api/auth/login`, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify(values)
